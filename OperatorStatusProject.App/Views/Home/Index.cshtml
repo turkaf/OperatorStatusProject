@@ -1,8 +1,148 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
+﻿@model OperatorStatusProject.App.Models.DataViewModel;
+@using System.Globalization
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="row mt-4">
+    <div class="col-md-7">
+        <table class="table table-dark table-borderless">
+            <thead>
+                <tr>
+                    <th colspan="6" class="text-center">Üretim Operasyon Bildirimleri</th>
+                </tr>
+                <tr>
+                    <th scope="col">Kayıt No</th>
+                    <th scope="col">Başlangıç</th>
+                    <th scope="col">Bitiş</th>
+                    <th scope="col">Toplam Süre (Saat)</th>
+                    <th scope="col">Statü</th>
+                    <th scope="col">Duruş Nedeni</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.shiftData)
+                {
+                    <tr>
+                        <td>@item.ShiftId</td>
+                        <td>@item.StartTime.ToString("HH:mm")</td>
+                        <td>@item.EndTime.ToString("HH:mm")</td>
+                        <td>
+                            @{
+                                var timeDifference = item.EndTime - item.StartTime;
+                                var totalMinutes = (int)timeDifference.TotalMinutes;
+                                var hours = totalMinutes / 60;
+                                var minutes = totalMinutes % 60;
+                                var formattedTimeDifference = string.Format("{0}:{1:00}", hours, minutes);
+                            }
+                            @formattedTimeDifference
+                        </td>
+                        <td>@item.Status</td>
+                        <td>@item.Reason</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-md-5">
+        
+        <table class="table table-dark table-borderless">
+            <thead>
+                <tr>
+                    <th colspan="3" class="text-center">Standart Duruşlar</th>
+                </tr>
+                <tr>
+                    <th scope="col">Başlangıç</th>
+                    <th scope="col">Bitiş</th>
+                    <th scope="col">Duruş Nedeni</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.stances)
+                {
+                    <tr>
+                        <td>@item.StartTime.ToString("hh\\:mm")</td>
+                        <td>@item.EndTime.ToString("hh\\:mm")</td>
+                        <td>@item.Reason</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row mt-2 mb-4">
+    <div class="col-12 d-flex justify-content-center">
+        <button type="button" class="btn btn-success" id="generateTableButton">Sonuç Tablosu İçin Tıklayınız</button>
+    </div>
+</div>
+
+<div class="row mt-2">
+    <div class="col-12">
+        <table class="table table-dark table-borderless" id="resultTable">
+            <thead>
+                <tr>
+                    <th colspan="6" class="text-center">Üretim Operasyon Bildirimleri</th>
+                </tr>
+                <tr>
+                    <th scope="col">Kayıt No</th>
+                    <th scope="col">Başlangıç</th>
+                    <th scope="col">Bitiş</th>
+                    <th scope="col">Toplam Süre (Saat)</th>
+                    <th scope="col">Statü</th>
+                    <th scope="col">Duruş Nedeni</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach(var shiftData in Model.shiftData)
+                {
+                    var endTime = shiftData.EndTime.TimeOfDay;
+                    @while (endTime <= new TimeSpan(17, 30, 0))
+                    {
+                        @foreach(var stances in Model.stances)
+                        {
+                            if(endTime < stances.EndTime)
+                            {
+                                <tr>
+                                    <td>@shiftData.ShiftId</td>
+                                    <td>@shiftData.StartTime.ToString("HH:mm")</td>
+                                    <td>@shiftData.EndTime.ToString("HH:mm")</td>
+                                    <td>
+                                        @{
+                                            var timeDifference = shiftData.EndTime - shiftData.StartTime;
+                                            var totalMinutes = (int)timeDifference.TotalMinutes;
+                                            var hours = totalMinutes / 60;
+                                            var minutes = totalMinutes % 60;
+                                            var formattedTimeDifference = string.Format("{0}:{1:00}", hours, minutes);
+                                        }
+                                        @formattedTimeDifference
+                                    </td>
+                                    <td>@shiftData.Status</td>
+                                    <td>@shiftData.Reason</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td>@shiftData.ShiftId</td>
+                                    <td>@shiftData.StartTime.ToString("HH:mm")</td>
+                                    <td>@shiftData.EndTime.ToString("HH:mm")</td>
+                                    <td>
+                                        @{
+                                            var timeDifference = shiftData.EndTime - shiftData.StartTime;
+                                            var totalMinutes = (int)timeDifference.TotalMinutes;
+                                            var hours = totalMinutes / 60;
+                                            var minutes = totalMinutes % 60;
+                                            var formattedTimeDifference = string.Format("{0}:{1:00}", hours, minutes);
+                                        }
+                                        @formattedTimeDifference
+                                    </td>
+                                    <td>@shiftData.Status</td>
+                                    <td>@shiftData.Reason</td>
+                                </tr>
+                            }
+                        }
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
 </div>
