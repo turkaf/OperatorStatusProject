@@ -199,7 +199,6 @@
                                     <td>@data.Status</td>
                                     <td>@data.Reason</td>
                                 </tr>
-                                i--;
                                 break;
                             }
                             else if(startTime <= stance.StartTime && endTime >= stance.EndTime)
@@ -223,6 +222,7 @@
                                 </tr>
                                 startTime = stance.StartTime;
                                 endTime = stance.EndTime;
+                                i--;
                                 break;
                             }
                             else if(startTime == stance.EndTime && endTime == stance.EndTime)
