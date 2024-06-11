@@ -92,22 +92,101 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach(var shiftData in Model.shiftData)
+                @* @foreach(var shiftData in Model.shiftData)
                 {
+                    var startTime = shiftData.StartTime.TimeOfDay;
                     var endTime = shiftData.EndTime.TimeOfDay;
-                    @while (endTime <= new TimeSpan(17, 30, 0))
+                    var realEndTime = endTime;
+
+                    @foreach (var stances in Model.stances)
                     {
-                        @foreach(var stances in Model.stances)
+                        if (endTime <= stances.StartTime)
                         {
-                            if(endTime < stances.EndTime)
+                            <tr>
+                                <td>@shiftData.ShiftId</td>
+                                <td>@startTime.ToString("hh\\:mm")</td>
+                                <td>@endTime.ToString("hh\\:mm")</td>
+                                <td>
+                                    @{
+                                        var timeDifference = endTime - startTime;
+                                        var totalMinutes = (int)timeDifference.TotalMinutes;
+                                        var hours = totalMinutes / 60;
+                                        var minutes = totalMinutes % 60;
+                                        var formattedTimeDifference = string.Format("{0}:{1:00}", hours, minutes);
+                                    }
+                                    @formattedTimeDifference
+                                </td>
+                                <td>@shiftData.Status</td>
+                                <td>@shiftData.Reason</td>
+                            </tr>
+                            break;
+                        }
+                        else if(startTime <= stances.StartTime && endTime > stances.EndTime)
+                        {
+                            <tr>
+                                <td>@shiftData.ShiftId</td>
+                                <td>@startTime.ToString("hh\\:mm")</td>
+                                <td>@stances.StartTime.ToString("hh\\:mm")</td>
+                                <td>
+                                    @{
+                                        var timeDifference = stances.StartTime - startTime;
+                                        var totalMinutes = (int)timeDifference.TotalMinutes;
+                                        var hours = totalMinutes / 60;
+                                        var minutes = totalMinutes % 60;
+                                        var formattedTimeDifference = string.Format("{0}:{1:00}", hours, minutes);
+                                    }
+                                    @formattedTimeDifference
+                                </td>
+                                <td>@shiftData.Status</td>
+                                <td>@shiftData.Reason</td>
+                            </tr>
+                            startTime = stances.StartTime;
+                            endTime = stances.EndTime;
+                        }
+                        else if(startTime == stances.StartTime && endTime == stances.EndTime)
+                        {
+                            <tr>
+                                <td>@shiftData.ShiftId</td>
+                                <td>@startTime.ToString("hh\\:mm")</td>
+                                <td>@endTime.ToString("hh\\:mm")</td>
+                                <td>
+                                    @{
+                                        var timeDifference = endTime - startTime;
+                                        var totalMinutes = (int)timeDifference.TotalMinutes;
+                                        var hours = totalMinutes / 60;
+                                        var minutes = totalMinutes % 60;
+                                        var formattedTimeDifference = string.Format("{0}:{1:00}", hours, minutes);
+                                    }
+                                    @formattedTimeDifference
+                                </td>
+                                <td>Duruş</td>
+                                <td>@stances.Reason</td>
+                            </tr>
+                            startTime = stances.EndTime;
+                            endTime = realEndTime;
+                        }
+                    }
+                    endTime = realEndTime;
+                } *@
+
+                @{
+                    foreach (var data in Model.shiftData)
+                    {
+                        var startTime = data.StartTime.TimeOfDay;
+                        var endTime = data.EndTime.TimeOfDay;
+                        var realEndTime = endTime;
+
+                        foreach(var stance in Model.stances)
+                        {
+                            if(data.EndTime.TimeOfDay < stance.StartTime)
                             {
                                 <tr>
-                                    <td>@shiftData.ShiftId</td>
-                                    <td>@shiftData.StartTime.ToString("HH:mm")</td>
-                                    <td>@shiftData.EndTime.ToString("HH:mm")</td>
+                                    <td>@data.ShiftId</td>
+                                    <td>@data.StartTime.ToString("HH:mm")</td>
+                                    <td>@data.EndTime.ToString("HH:mm")</td>
                                     <td>
                                         @{
-                                            var timeDifference = shiftData.EndTime - shiftData.StartTime;
+                                            var timeDifference = data.EndTime - data.StartTime;
                                             var totalMinutes = (int)timeDifference.TotalMinutes;
                                             var hours = totalMinutes / 60;
                                             var minutes = totalMinutes % 60;
@@ -115,34 +194,29 @@
                                         }
                                         @formattedTimeDifference
                                     </td>
-                                    <td>@shiftData.Status</td>
-                                    <td>@shiftData.Reason</td>
+                                    <td>@data.Status</td>
+                                    <td>@data.Reason</td>
                                 </tr>
+                                break;
                             }
-                            else
-                            {
-                                <tr>
-                                    <td>@shiftData.ShiftId</td>
-                                    <td>@shiftData.StartTime.ToString("HH:mm")</td>
-                                    <td>@shiftData.EndTime.ToString("HH:mm")</td>
-                                    <td>
-                                        @{
-                                            var timeDifference = shiftData.EndTime - shiftData.StartTime;
-                                            var totalMinutes = (int)timeDifference.TotalMinutes;
-                                            var hours = totalMinutes / 60;
-                                            var minutes = totalMinutes % 60;
-                                            var formattedTimeDifference = string.Format("{0}:{1:00}", hours, minutes);
-                                        }
-                                        @formattedTimeDifference
-                                    </td>
-                                    <td>@shiftData.Status</td>
-                                    <td>@shiftData.Reason</td>
-                                </tr>
-                            }
+                            else if(data.EndTime.TimeOfDay)
                         }
                     }
                 }
+
+                
             </tbody>
         </table>
     </div>
 </div>
+
+@functions {
+    string GetFormattedDuration(TimeSpan duration)
+    {
+        var totalMinutes = (int)duration.TotalMinutes;
+        var hours = totalMinutes / 60;
+        var minutes = totalMinutes % 60;
+        var formattedTimeDifference = string.Format("{0}:{1:00}", hours, minutes);
+        return formattedTimeDifference;
+    }
+}
