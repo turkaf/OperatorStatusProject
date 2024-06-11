@@ -21,6 +21,13 @@ namespace OperatorStatusProject.App.Controllers
             return View(viewModel);
         }
 
+        public ActionResult ResultPage()
+        {
+            var viewModel = new DataViewModel();
+            var shiftData = viewModel.shiftData;
+            var stances = viewModel.stances;
+            return View(viewModel);
+        }
 
     }
 }

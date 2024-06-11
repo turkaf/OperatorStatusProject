@@ -1,0 +1,152 @@
+﻿@model OperatorStatusProject.App.Models.DataViewModel;
+@using System.Globalization
+@using OperatorStatusProject.App.Entity
+
+<div class="row mt-4">
+    <div class="col-12">
+        <table class="table table-dark table-borderless" id="resultTable">
+            <thead>
+                <tr>
+                    <th colspan="6" class="text-center">Üretim Operasyon Bildirimleri</th>
+                </tr>
+                <tr>
+                    <th scope="col">Kayıt No</th>
+                    <th scope="col">Başlangıç</th>
+                    <th scope="col">Bitiş</th>
+                    <th scope="col">Toplam Süre (Saat)</th>
+                    <th scope="col">Statü</th>
+                    <th scope="col">Duruş Nedeni</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    for (int i = 0; i < Model.shiftData.Count; i++)
+                    {
+                        var data = Model.shiftData[i];
+                        var startTime = data.StartTime.TimeOfDay;
+                        var endTime = data.EndTime.TimeOfDay;
+                        var realEndTime = endTime;
+
+                        foreach (var stance in Model.stances)
+                        {
+                            if (data.EndTime.TimeOfDay < stance.StartTime)
+                            {
+                                <tr>
+                                    <td>@data.ShiftId</td>
+                                    <td>@data.StartTime.ToString("dd.MM.yyyy") @data.StartTime.ToString("HH:mm")</td>
+                                    <td>@data.StartTime.ToString("dd.MM.yyyy") @data.EndTime.ToString("HH:mm")</td>
+                                    <td>
+                                        @{
+                                            var timeDifference = data.EndTime - data.StartTime;
+                                            string formattedDuration = GetFormattedDuration(timeDifference);
+                                        }
+                                        @formattedDuration
+                                    </td>
+                                    <td>@data.Status</td>
+                                    <td>@data.Reason</td>
+                                </tr>
+                                break;
+                            }
+                            else if (stance.StartTime > startTime && stance.EndTime < endTime)
+                            {
+                                <tr>
+                                    <td>@data.ShiftId</td>
+                                    <td>@data.StartTime.ToString("dd.MM.yyyy") @startTime.ToString("hh\\:mm")</td>
+                                    <td>@data.StartTime.ToString("dd.MM.yyyy") @stance.StartTime.ToString("hh\\:mm")</td>
+                                    <td>
+                                        @{
+                                            var timeDifference = stance.StartTime - startTime;
+                                            string formattedDuration = GetFormattedDuration(timeDifference);
+                                        }
+                                        @formattedDuration
+                                    </td>
+                                    <td>@data.Status</td>
+                                    <td>@data.Reason</td>
+                                </tr>
+                                StopCondition(stance, data);
+                                startTime = stance.EndTime;
+                                <tr>
+                                    <td>@data.ShiftId</td>
+                                    <td>@data.StartTime.ToString("dd.MM.yyyy") @startTime.ToString("hh\\:mm")</td>
+                                    <td>@data.StartTime.ToString("dd.MM.yyyy") @endTime.ToString("hh\\:mm")</td>
+                                    <td>
+                                        @{
+                                            timeDifference = endTime - startTime;
+                                            formattedDuration = GetFormattedDuration(timeDifference);
+                                        }
+                                        @formattedDuration
+                                    </td>
+                                    <td>@data.Status</td>
+                                    <td>@data.Reason</td>
+                                </tr>
+                                break;
+                            }
+                            else if (startTime == stance.StartTime && stance.EndTime < endTime)
+                            {
+                                StopCondition(stance, data);
+                                startTime = stance.EndTime;
+                                <tr>
+                                    <td>@data.ShiftId</td>
+                                    <td>@data.StartTime.ToString("dd.MM.yyyy") @startTime.ToString("hh\\:mm")</td>
+                                    <td>@data.StartTime.ToString("dd.MM.yyyy") @endTime.ToString("hh\\:mm")</td>
+                                    <td>
+                                        @{
+                                            var timeDifference = endTime - startTime;
+                                            string formattedDuration = GetFormattedDuration(timeDifference);
+                                        }
+                                        @formattedDuration
+                                    </td>
+                                    <td>@data.Status</td>
+                                    <td>@data.Reason</td>
+                                </tr>
+                                break;
+                            }
+                        }
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row mt-2">
+    <div class="col-12 d-flex justify-content-center" onclick="goToHomePage()">
+        <button type="button" class="btn btn-success">Ana Sayfa</button>
+    </div>
+</div>
+
+@functions {
+    string GetFormattedDuration(TimeSpan duration)
+    {
+        var totalMinutes = (int)duration.TotalMinutes;
+        var hours = totalMinutes / 60;
+        var minutes = totalMinutes % 60;
+        var formattedTimeDifference = string.Format("{0:00}:{1:00}", hours, minutes);
+        return formattedTimeDifference;
+    }
+
+    void StopCondition(StandartStances standartStances, ShiftData shiftData)
+    {
+        <tr>
+            <td>@shiftData.ShiftId</td>
+            <td>@shiftData.StartTime.ToString("dd.MM.yyyy") @standartStances.StartTime.ToString("hh\\:mm")</td>
+            <td>@shiftData.StartTime.ToString("dd.MM.yyyy") @standartStances.EndTime.ToString("hh\\:mm")</td>
+            <td>
+                @{
+                    var timeDifference = standartStances.EndTime - standartStances.StartTime;
+                    string formattedDuration = GetFormattedDuration(timeDifference);
+                }
+                @formattedDuration
+            </td>
+            <td>Duruş</td>
+            <td>@standartStances.Reason</td>
+        </tr>
+    }
+}
+
+<script>
+    function goToHomePage() {
+        var homePageUrl = '/';
+        window.location.href = homePageUrl;
+    }
+</script>
